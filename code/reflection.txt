@@ -1,7 +1,42 @@
-Write your reflection here.
+I learned that assertion messages are important because they show 
+exactly what the test expected and what my code actually returned. When 
+I accidentally used the wrong sentiment endpoint in get_entities, the test 
+helped me catch the mistake. I also learned that raise_for_status() checks for 
+HTTP errors. A 401 means unauthorized, a 404 means the endpoint was not found, 
+and a 429 means too many requests. Azure endpoints used data= for form data, while 
+the AI endpoints used json= for a JSON body. My API key was stored in a .env file 
+and kept out of Git so it would not be exposed publicly.
 
-See reflection.md for what makes a good reflection — be specific, use the
-terminology from this assignment (REST API, endpoint, HTTP status code,
-raise_for_status, API key, form data vs. JSON body, rate limit, caching,
-json_normalize, record_path, meta, grain, opinion mining, named-entity
-recognition, prompt, system prompt, reasoning model), and make it actionable.
+
+
+The API had a limit of 150 requests per day, so caching in 
+sentiment_step and entities_step helped avoid repeatedly sending the same requests.
+Instead, previously saved responses could be reused. The portal used byte-for-byte
+caching, meaning even changing the order of mentions counted as a different 
+request.
+
+
+
+I learned to use json_normalize with record_path, meta, and record_prefix to 
+flatten nested JSON responses into tables. However, opinions_table required nested 
+loops because the opinions were stored at multiple levels. Each table had a
+different grain: one row per sentence, one row per target, or one row per mention.
+The test_sentiment_step_calls_then_caches test initially failed with a NoneType 
+error because opinions_table did not exist yet, so the function had nothing to 
+return.
+
+
+Opinion mining identifies opinions and their sentiment, while named-entity 
+recognition identifies people, places, and other named entities. Both were needed 
+to connect opinions to the correct subjects, such as Pete, Tally, and Otto, or T3's
+seating and music. The system prompt gives the model instructions on how to behave,
+while the user prompt provides the actual task and information. Pandas handled 
+the counting because it is more reliable for exact calculations, while the
+reasoning model was used to explain the results in a readable answer.
+
+
+
+Next time, I would read the full traceback and test assertions before 
+changing my code. I would also write functions before testing steps that depend 
+on them and use print(type(response)) when I get an unexpected None value. 
+This would help me find errors faster and avoid wasting API requests.
